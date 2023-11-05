@@ -1,9 +1,2 @@
-.idea
-__pycache__
-docker-compose.yml
-Dockerfile
-
-lamp-app-ecommerce/
-
-tetris/
+**/.vagrant/
 
