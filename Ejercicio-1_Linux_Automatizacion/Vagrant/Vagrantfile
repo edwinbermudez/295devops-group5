@@ -30,11 +30,12 @@ Vagrant.configure("2") do |config|
   
   LRED='\033[1;31m'
   LGREEN='\033[1;32m'
+  LYELLOW='\033[1;33m'
   NC='\033[0m'
   
-  echo "-------------------- Updating package lists ----------------"
+  echo -e "${LGREEN}-------------------- Actualizando paquetes existentes ----------------${NC}"
   sudo apt-get update -y
-  echo "-------------------- Instalando paquetes ----------------"
+  echo "${LYELLOW}-------------------- Instalando nuevos paquetes ----------------${NC}"
   InstalarPaquetes() {
     local paquetes=("$@")
     for paquete in "${paquetes[@]}"; do
@@ -49,7 +50,7 @@ Vagrant.configure("2") do |config|
           exit 1
         fi
         if [ "$paquete" = "apache2" ]; then
-          echo "Se inicia servicio de Apache"
+          echo "Se inicia servicio de Apache2"
           sudo systemctl start apache2
           sudo systemctl enable apache2
         fi
