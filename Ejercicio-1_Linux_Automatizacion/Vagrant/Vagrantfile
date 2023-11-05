@@ -1,0 +1,70 @@
+Vagrant.configure("2") do |config|
+  config.vm.box = "ubuntu/jammy64"
+  config.vm.network "private_network", ip: "172.16.1.2"
+  config.vm.network "forwarded_port", guest: 80, host: 8081 #localhost
+  config.vm.network "forwarded_port", guest: 22, host: 2222 #ssh
+  config.vm.network "forwarded_port", guest: 8080, host: 1234 #alternative port
+  config.vm.network "forwarded_port", guest: 8000, host: 1256 #alternative port
+  config.vm.network "forwarded_port", guest: 3306, host: 1260 #mysql
+  config.vm.hostname = "bootcamp295"
+  config.vm.synced_folder ".", "/syncd", disabled: false
+  config.vm.disk :disk, size: "80GB", primary: true
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = "2048"
+    vb.cpus = "2"
+    vb.name = "295devops_group5"
+  end
+  
+
+  config.vm.provision "shell", inline: <<-SHELL
+  
+  paquetes=(
+    curl  
+    apache2
+    git
+    php
+    libapache2-mod-php
+    mariadb-server
+    tree
+  )
+  
+  LRED='\033[1;31m'
+  LGREEN='\033[1;32m'
+  NC='\033[0m'
+  
+  echo "-------------------- Updating package lists ----------------"
+  sudo apt-get update -y
+  echo "-------------------- Instalando paquetes ----------------"
+  InstalarPaquetes() {
+    local paquetes=("$@")
+    for paquete in "${paquetes[@]}"; do
+      dpkg -s "$paquete" &> /dev/null
+      if [ $? -eq 0 ]; then
+        sleep 1
+        echo -e "\n${LGREEN}$paquete is already installed${NC}"
+      else
+        apt install "$paquete" -y 
+        if [ $? -ne 0 ]; then
+          echo -e "\n${LRED} Error installing $paquete${NC}"
+          exit 1
+        fi
+        if [ "$paquete" = "apache2" ]; then
+          echo "Se inicia servicio de Apache"
+          sudo systemctl start apache2
+          sudo systemctl enable apache2
+        fi
+        if [ "$paquete" = "mariadb-server" ] ; then
+          echo "Se inicia servicio de Mariadb"
+          sudo systemctl start mariadb
+          sudo systemctl enable mariadb
+        fi  
+      fi
+    done
+  }
+  
+  InstalarPaquetes "${paquetes[@]}"
+  
+  echo -e "${LGREEN}Packages Installed Continuing ...${NC}" 
+  
+  SHELL
+end
