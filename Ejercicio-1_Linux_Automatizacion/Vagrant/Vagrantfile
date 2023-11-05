@@ -24,6 +24,7 @@ Vagrant.configure("2") do |config|
     git
     php
     libapache2-mod-php
+    php-mysql
     mariadb-server
     tree
   )
