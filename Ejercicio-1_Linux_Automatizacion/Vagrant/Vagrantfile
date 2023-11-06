@@ -17,7 +17,8 @@ Vagrant.configure("2") do |config|
   
 
   config.vm.provision "shell", inline: <<-SHELL
-  
+ 
+  #Paquetes para el servidor LAMP
   paquetes=(
     curl  
     git
@@ -34,14 +35,13 @@ Vagrant.configure("2") do |config|
     tree
   )
   
+  #Definición de colores
   LRED='\033[1;31m'
   LGREEN='\033[1;32m'
   LYELLOW='\033[1;33m'
   NC='\033[0m'
   
-  echo -e "${LGREEN}-------------------- Actualizando paquetes existentes ----------------${NC}"
-  sudo apt-get update -y
-  echo "${LYELLOW}-------------------- Instalando nuevos paquetes ----------------${NC}"
+
   InstalarPaquetes() {
     local paquetes=("$@")
     for paquete in "${paquetes[@]}"; do
@@ -69,10 +69,6 @@ Vagrant.configure("2") do |config|
     done
   }
   
-  InstalarPaquetes "${paquetes[@]}"
-  
-  echo -e "${LGREEN}Validacion de los servicios...${NC}" 
-  
   ValidacionServicios() {
     local paquetes=("$@")
     for paquete in "${paquetes[@]}"; do
@@ -93,7 +89,31 @@ Vagrant.configure("2") do |config|
     done
   }
 
-  ValidacionServicios "${paquetes[@]}"
+#Function Stage1 Instalación de paquetes nuevos y validación de los servicios y paquetes instalados  
+  Stage1() {
 
+    echo -e "${LGREEN} -------------------- Actualizando paquetes existentes ----------------${NC}"
+    sudo apt-get update -y
+
+    echo -e "${LYELLOW} -------------------- Instalando nuevos paquetes ----------------${NC}"
+    InstalarPaquetes "${paquetes[@]}"
+    
+    echo -e "${LGREEN} -------------------- Validacion de los servicios --------------------${NC}"
+    ValidacionServicios "${paquetes[@]}"
+  }
+
+################################## STAGES ###########################################################  
+#Instalación
+Stage1
+
+#Build
+#Stage2
+  
+#Deploy
+#Stage3
+  
+#Notification
+#Stage4
+  
   SHELL
 end
