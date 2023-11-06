@@ -51,12 +51,12 @@ Vagrant.configure("2") do |config|
           exit 1
         fi
         if [ "$paquete" = "apache2" ]; then
-          echo "Se inicia servicio de Apache2"
+          echo -e "${LGREEN}Se inicia servicio de Apache2${NC}"
           sudo systemctl start apache2
           sudo systemctl enable apache2
         fi
         if [ "$paquete" = "mariadb-server" ] ; then
-          echo "Se inicia servicio de Mariadb"
+          echo -e "${LGREEN}Se inicia servicio de Mariadb${NC}"
           sudo systemctl start mariadb
           sudo systemctl enable mariadb
         fi  
