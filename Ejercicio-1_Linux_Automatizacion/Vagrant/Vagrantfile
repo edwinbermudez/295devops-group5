@@ -60,7 +60,7 @@ Vagrant.configure("2") do |config|
           sudo systemctl start apache2
           sudo systemctl enable apache2
         fi
-        if [ "$paquete" = "mariadb-server" ] ; then
+        if [ "$paquete" = "mariadb-server" ]; then
           echo -e "${LGREEN}Se inicia servicio de Mariadb${NC}"
           sudo systemctl start mariadb
           sudo systemctl enable mariadb
@@ -81,10 +81,22 @@ Vagrant.configure("2") do |config|
           php -v;;
         mariadb-server)
           echo -e "${LYELLOW} -------- Verificando el estado del servicio MARIADB -------- ${NC}"
-          sudo systemctl status mariadb;;
+          mysql --version
+          if systemctl is-active --quiet mariadb; then
+            echo -e "${LGREEN}MariaDB is running.${NC}"
+          else
+            echo -e "${LRED}MariaDB is not running. ${NC}"
+          fi
+          ;;
         apache2)
           echo -e "${LYELLOW} -------- Verificando el estado del servicio de APACHE -------- ${NC}"
-          sudo systemctl status apache2;;  
+          apache2 -v
+          if systemctl is-active --quiet apache2; then
+            echo -e "${LGREEN}Apache is running.${NC}"
+          else
+            echo -e "${LRED}Apache is not running. ${NC}"
+          fi
+          ;;
       esac
     done
   }
@@ -101,6 +113,7 @@ Vagrant.configure("2") do |config|
     echo -e "${LGREEN} -------------------- Validacion de los servicios --------------------${NC}"
     ValidacionServicios "${paquetes[@]}"
   }
+
 
 ################################## STAGES ###########################################################  
 #Instalación
