@@ -18,6 +18,13 @@ Vagrant.configure("2") do |config|
 
   config.vm.provision "shell", inline: <<-SHELL
  
+  DISTRO=$(lsb_release -ds)
+  USERID=$(id -u)
+
+  if [[ "${USERID}" -ne "0" ]]; then
+  echo -e "\e[31;1;3mDebes ser usuario ROOT.\e[m"
+  exit 1
+  fi 
   #Paquetes para el servidor LAMP
   paquetes=(
     curl  
@@ -57,13 +64,13 @@ Vagrant.configure("2") do |config|
         fi
         if [ "$paquete" = "apache2" ]; then
           echo -e "${LGREEN}Se inicia servicio de Apache2${NC}"
-          sudo systemctl start apache2
-          sudo systemctl enable apache2
+          systemctl start apache2
+          systemctl enable apache2
         fi
         if [ "$paquete" = "mariadb-server" ]; then
           echo -e "${LGREEN}Se inicia servicio de Mariadb${NC}"
-          sudo systemctl start mariadb
-          sudo systemctl enable mariadb
+          systemctl start mariadb
+          systemctl enable mariadb
         fi  
       fi
     done
@@ -101,7 +108,7 @@ Vagrant.configure("2") do |config|
     done
   }
 
-#Function Stage1 Instalación de paquetes nuevos y validación de los servicios y paquetes instalados  
+  #Function Stage1 Instalación de paquetes nuevos y validación de los servicios y paquetes instalados  
   Stage1() {
 
     echo -e "${LGREEN} -------------------- Actualizando paquetes existentes ----------------${NC}"
@@ -115,18 +122,18 @@ Vagrant.configure("2") do |config|
   }
 
 
-################################## STAGES ###########################################################  
-#Instalación
-Stage1
+  ################################## STAGES ###########################################################  
+  #Instalación
+  Stage1
 
-#Build
-#Stage2
+  #Build
+  #Stage2
   
-#Deploy
-#Stage3
+  #Deploy
+  #Stage3
   
-#Notification
-#Stage4
+  #Notification
+  #Stage4
   
   SHELL
 end
