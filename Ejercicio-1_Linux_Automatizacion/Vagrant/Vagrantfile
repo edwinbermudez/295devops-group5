@@ -20,6 +20,11 @@ Vagrant.configure("2") do |config|
   #Declaración de variables
   DISTRO=$(lsb_release -ds)
   USERID=$(id -u)
+  REPO="https://github.com/roxsross/bootcamp-devops-2023.git"
+  FOLDER="bootcamp-devops-2023"
+  RAMA="clase2-linux-bash"
+  APP="app-295devops-travel"
+
 
   #Validation root user
   if [[ "${USERID}" -ne "0" ]]; then
@@ -32,7 +37,6 @@ Vagrant.configure("2") do |config|
     curl  
     git
     php
-    apache2
     libapache2-mod-php
     php-mysql
     php-mbstring
@@ -40,10 +44,14 @@ Vagrant.configure("2") do |config|
     php-gd
     php-json
     php-curl
-    mariadb-server
     tree
   )
   
+ servicios=(
+  mariadb-server
+  apache2
+ )
+
   #Definición de colores
   LRED='\033[1;31m'
   LGREEN='\033[1;32m'
@@ -64,50 +72,76 @@ Vagrant.configure("2") do |config|
           echo -e "\n${LRED} Error installing $paquete${NC}"
           exit 1
         fi
-        if [ "$paquete" = "apache2" ]; then
-          echo -e "${LGREEN}Se inicia servicio de Apache2${NC}"
-          systemctl start apache2
-          systemctl enable apache2
-        fi
-        if [ "$paquete" = "mariadb-server" ]; then
-          echo -e "${LGREEN}Se inicia servicio de Mariadb${NC}"
-          systemctl start mariadb
-          systemctl enable mariadb
-        fi  
       fi
     done
   }
   
   ValidacionServicios() {
-    local paquetes=("$@")
-    for paquete in "${paquetes[@]}"; do
-      case $paquete in
-        git)
-          echo -e "${LYELLOW} -------- Revisando la version de GIT -------- ${NC}"
-          git --version;;
-        php)
-          echo -e "${LYELLOW} -------- Revisando la version de PHP -------- ${NC}"
-          php -v;;
-        mariadb-server)
-          echo -e "${LYELLOW} -------- Verificando el estado del servicio MARIADB -------- ${NC}"
-          mysql --version
-          if systemctl is-active --quiet mariadb; then
-            echo -e "${LGREEN}MariaDB is running.${NC}"
-          else
-            echo -e "${LRED}MariaDB is not running. ${NC}"
-          fi
-          ;;
-        apache2)
-          echo -e "${LYELLOW} -------- Verificando el estado del servicio de APACHE -------- ${NC}"
-          apache2 -v
-          if systemctl is-active --quiet apache2; then
-            echo -e "${LGREEN}Apache is running.${NC}"
-          else
-            echo -e "${LRED}Apache is not running. ${NC}"
-          fi
-          ;;
-      esac
+    local servicios=("$@")
+    for servicio in "${servicios[@]}"; do
+      
+      apt install -y "$servicio"
+      if [ $? -eq 0 ]; then
+        systemctl start "$servicio"
+        systemctl enable "$servicio"
+
+        case $servicio in
+          mariadb-server)
+            echo -e "${LYELLOW} -------- erificando el estado del servicio de MARIADB -------- ${NC}"
+            mysql --version
+            if systemctl is-active --quiet mariadb; then
+              echo -e "${LGREEN}MariaDB is running.${NC}"
+            else
+              echo -e "${LRED}MariaDB is not running. ${NC}"
+            fi
+            ;;
+          apache2)
+            echo -e "${LYELLOW} -------- Verificando el estado del servicio de APACHE -------- ${NC}"
+            apache2 -v
+            if systemctl is-active --quiet apache2; then
+              echo -e "${LGREEN}Apache is running.${NC}"
+            else
+              echo -e "${LRED}Apache is not running. ${NC}"
+            fi
+            ;;
+        esac
+        
+      else
+          echo -e "${LRED}Error en la instalación del $servicio.${NC}"
+      fi
+
     done
+  }
+
+  #Clonar repositorio
+  ClonarRepo() {
+    if [ -d "$FOLDER" ]; then
+      echo -e "\n${LBLUE}La carpeta $FOLDER existe ...${NC}"
+      cd $FOLDER
+      git pull
+    else
+      git clone $REPO --single-branch --branch $RAMA
+    fi
+  }
+
+  #Configuración de la base de datos
+  ConfiguracionDB() {
+    if systemctl is-active --quiet mariadb; then
+      echo -e "${LGREEN}MariaDB is running.${NC}"
+      if mysql -e "USE devopstravel;" 2>/dev/null; then
+        echo -e "\n${LGREEN}La base de datos 'devopstravel' ya existe ...${NC}"
+      else
+        echo -e "\n${LBLUE}Configurando base de datos ...${NC}"
+        mysql -e "
+        CREATE DATABASE devopstravel;
+        CREATE USER 'codeuser'@'localhost' IDENTIFIED BY 'codepass';
+        GRANT ALL PRIVILEGES ON *.* TO 'codeuser'@'localhost';
+        FLUSH PRIVILEGES;"
+        mysql < $FOLDER/$APP/database/devopstravel.sql
+      fi 
+    else
+      echo -e "${LRED}MariaDB is not running.${NC}"
+    fi
   }
 
   #Function Stage1 Instalación de paquetes nuevos y validación de los servicios y paquetes instalados  
@@ -120,16 +154,21 @@ Vagrant.configure("2") do |config|
     InstalarPaquetes "${paquetes[@]}"
     
     echo -e "${LGREEN} -------------------- Validacion de los servicios --------------------${NC}"
-    ValidacionServicios "${paquetes[@]}"
+    ValidacionServicios "${servicios[@]}"
   }
 
+  Stage2() {
+    ClonarRepo
+    ConfiguracionDB
+    #ConfiguracionApache
+  }
 
   ################################## STAGES ###########################################################  
   #Instalación
   Stage1
 
   #Build
-  #Stage2
+  Stage2
   
   #Deploy
   #Stage3
