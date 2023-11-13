@@ -25,6 +25,7 @@ Vagrant.configure("2") do |config|
   RAMA="clase2-linux-bash"
   APP="app-295devops-travel"
   Config_Apache="/etc/apache2/mods-enabled/dir.conf"
+  Config_php="$FOLDER/$APP/config.php"
 
 
   #Validation root user
@@ -120,6 +121,7 @@ Vagrant.configure("2") do |config|
       echo -e "\n${LYELLOW}La carpeta $FOLDER existe ...${NC}"
       cd $FOLDER
       git pull
+      cd ~
     else
       git clone $REPO --single-branch --branch $RAMA
     fi
@@ -157,6 +159,16 @@ Vagrant.configure("2") do |config|
     fi
   }
 
+  InsertarContra() {
+    if [ ! -f "$Config_php" ]; then
+      echo -e "${LRED}El archivo $Config_php no existe. ${NC}"
+      exit 
+    else
+      sed -i 's/$dbPassword = "";\n/$dbPassword = "codepass";\n/g' "$Config_php"
+      echo -e "${LGREEN} La contraseña de la base de datos fue insertada en $Config_php ${NC}" 
+    fi
+  }
+
   #Function Stage1 Instalación de paquetes nuevos y validación de los servicios y paquetes instalados  
   Stage1() {
 
@@ -174,6 +186,7 @@ Vagrant.configure("2") do |config|
     ClonarRepo
     ConfiguracionDB
     ConfiguracionApache
+    InsertarContra
   }
 
   ################################## STAGES ###########################################################  
