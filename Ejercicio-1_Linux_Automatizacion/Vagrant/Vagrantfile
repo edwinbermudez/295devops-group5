@@ -30,7 +30,7 @@ Vagrant.configure("2") do |config|
 
   #Validation root user
   if [[ "${USERID}" -ne "0" ]]; then
-  echo -e "\e[31;1;3mDebes ser usuario ROOT.\e[m"
+  echo -e "\n${LRED} Debe ser usuario ROOT. ${NC}"
   exit 1
   fi 
   
@@ -165,8 +165,9 @@ Vagrant.configure("2") do |config|
       echo -e "${LGREEN} La contraseña de la base de datos fue insertada en $Config_php ${NC}" 
       # Copiar contenido de la carpeta app-295devops-travel a ruta /var/www/html
       cp -r $FOLDER/$APP/* /var/www/html
+      echo -e "${LGREEN} Se ha copiado los archivos a la ruta /var/www/html. ${NC}" 
     else
-      echo -e "${LRED}El archivo $Config_php no existe. ${NC}"
+      echo -e "${LRED}El archivo $Config_php no existe. Por favor validar.${NC}"
       exit 
     fi
   }
