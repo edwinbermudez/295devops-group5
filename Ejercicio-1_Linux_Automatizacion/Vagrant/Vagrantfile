@@ -123,6 +123,7 @@ Vagrant.configure("2") do |config|
       git pull
       cd ~
     else
+      echo -e "{LYELLOW} ---- Se esta clonando el repositorio $REPO. ---- ${NC}"
       git clone $REPO --single-branch --branch $RAMA
     fi
   }
@@ -159,13 +160,15 @@ Vagrant.configure("2") do |config|
     fi
   }
 
-  InsertarContra() {
+  ConfigPHP() {
     if [ -f "$Config_php" ]; then
       sed -i 's/$dbPassword = "";\n/$dbPassword = "codepass";\n/g' "$Config_php"
       echo -e "${LGREEN} La contraseña de la base de datos fue insertada en $Config_php ${NC}" 
       # Copiar contenido de la carpeta app-295devops-travel a ruta /var/www/html
+      mv /var/www/html/index.html /var/www/html/index.html.bkp
       cp -r $FOLDER/$APP/* /var/www/html
       echo -e "${LGREEN} Se ha copiado los archivos a la ruta /var/www/html. ${NC}" 
+      sudo systemctl reload apache2
     else
       echo -e "${LRED}El archivo $Config_php no existe. Por favor validar.${NC}"
       exit 
@@ -189,7 +192,7 @@ Vagrant.configure("2") do |config|
     ClonarRepo
     ConfiguracionDB
     ConfiguracionApache
-    InsertarContra
+    ConfigPHP
   }
 
   ################################## STAGES ###########################################################  
