@@ -12,8 +12,8 @@ CONFIG_PHP="$FOLDER/$APP/config.php"
 
 #Validation root user
 if [[ "${USERID}" -ne "0" ]]; then
-echo -e "\n${LRED} Debe ser usuario ROOT. ${NC}"
-exit 1
+  echo -e "\n${LRED} Debe ser usuario ROOT. ${NC}"
+  exit 1
 fi 
 
 #Paquetes para el servidor LAMP
@@ -213,49 +213,48 @@ NotificacionDiscord () {
          }' "$discord_key"
 
 }
-#--------------------------------------------------------------------------------------------------#
-#Function Stage1 Instalación de paquetes nuevos y validación de los servicios y paquetes instalados  
-stage1() {
-  echo -e "${LGREEN} -------------------- Actualizando paquetes existentes ----------------${NC}"
-  sudo apt-get update -y
-  echo -e "${LGREEN} -------------------- Instalando nuevos paquetes ----------------${NC}"
-  InstalarPaquetes "${paquetes[@]}"
-  
-  echo -e "${LGREEN} -------------------- Validacion de los servicios --------------------${NC}"
-  ValidacionServicios "${servicios[@]}"
-}
-stage2() {
-  echo -e "${LGREEN} -------------------- Clonación de Repositorio ----------------${NC}"
-  ClonarRepo
-  echo -e "${LGREEN} -------------------- Configuración del servidor Apache ----------------${NC}"
-  ConfiguracionApache
-  }
-stage3() {
-  echo -e "${LGREEN} -------------------- Configuración de la página web----------------${NC}"
-  ConfigPHP
-  echo -e "${LGREEN} -------------------- Configuración de la base de datos MariaDB ----------------${NC}"
-  ConfiguracionDB
-  echo -e "${LGREEN} -------------------- Validación de la página Web ----------------${NC}"
-  ValidarPHP
-}
-stage4() {
-  echo -e "${LGREEN} -------------------- Notificación al canal de Discord ----------------${NC}"
-  NotificacionDiscord
-}
 
 #Función principal
-main(){
+main() {
   # Stage 1: Installation
-  stage1
- 
+  stage1() {
+    echo -e "${LGREEN} -------------------- Actualizando paquetes existentes ----------------${NC}"
+    sudo apt-get update -y
+    echo -e "${LGREEN} -------------------- Instalando nuevos paquetes ----------------${NC}"
+    InstalarPaquetes "${paquetes[@]}"
+    echo -e "${LGREEN} -------------------- Validacion de los servicios --------------------${NC}"
+    ValidacionServicios "${servicios[@]}"
+  }
+
   # Stage 2: Configuration
-  stage2
- 
-  # Stage 3: Validation
-  stage3
+  stage2() {
+    echo -e "${LGREEN} -------------------- Clonación de Repositorio ----------------${NC}"
+    ClonarRepo
+    echo -e "${LGREEN} -------------------- Configuración del servidor Apache ----------------${NC}"
+    ConfiguracionApache
+  }
+
+  # Stage 3: Configuration
+  stage3() { 
+    echo -e "${LGREEN} -------------------- Configuración de la página web----------------${NC}"
+    ConfigPHP
+    echo -e "${LGREEN} -------------------- Configuración de la base de datos MariaDB ----------------${NC}"
+    ConfiguracionDB
+    echo -e "${LGREEN} -------------------- Validación de la página Web ----------------${NC}"
+    ValidarPHP
+  }
 
   # Stage 4: Notification
-  stage4
+  stage4() {
+    echo -e "${LGREEN} -------------------- Notificación al canal de Discord ----------------${NC}"
+    NotificacionDiscord
+  }
+
+  # Llama a las funciones.
+  stage1
+  stage2
+  stage3
+  stage4 
 }
 
 main
