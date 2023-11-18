@@ -7,8 +7,8 @@ REPO="https://github.com/roxsross/bootcamp-devops-2023.git"
 FOLDER="bootcamp-devops-2023"
 RAMA="clase2-linux-bash"
 APP="app-295devops-travel"
-Config_Apache="/etc/apache2/mods-enabled/dir.conf"
-Config_php="$FOLDER/$APP/config.php"
+CONFIG_APACHE="/etc/apache2/mods-enabled/dir.conf"
+CONFIG_PHP="$FOLDER/$APP/config.php"
 
 #Validation root user
 if [[ "${USERID}" -ne "0" ]]; then
@@ -115,21 +115,20 @@ ClonarRepo() {
 ConfiguracionApache() {
   echo -e "\n ${LBLUE} Validación de PHP.${NC}"
   php -v
-  if [ -f "$Config_Apache" ]; then
-    sed -i 's/DirectoryIndex.*/DirectoryIndex index.php index.html index.cgi index.pl index.xhtml index.htm/g' "$Config_Apache"
-    echo -e "${LBLUE} Se ha actualizado el orden en el archivo $Config_Apache ${NC}"
+  if [ -f "$CONFIG_APACHE" ]; then
+    sed -i 's/DirectoryIndex.*/DirectoryIndex index.php index.html index.cgi index.pl index.xhtml index.htm/g' "$CONFIG_APACHE"
+    echo -e "${LBLUE} Se ha actualizado el orden en el archivo $CONFIG_APACHE ${NC}"
     systemctl reload apache2
   else
-    echo "\n${LRED} El archivo $Config_Apache no existe.${NC}"
+    echo "\n${LRED} El archivo $CONFIG_APACHE no existe.${NC}"
   fi
 }
 
 #Configuración PHP
 ConfigPHP() {
-  pwd
-  if [ -f "$Config_php" ]; then
-    sed -i 's/$dbPassword = "";/&\n$dbPassword = "codepass";/' "$Config_php"
-    echo -e "${LBLUE} La contraseña de la base de datos fue insertada en $Config_php ${NC}" 
+  if [ -f "$CONFIG_PHP" ]; then
+    sed -i 's/$dbPassword = "";/&\n$dbPassword = "codepass";/' "$CONFIG_PHP"
+    echo -e "${LBLUE} La contraseña de la base de datos fue insertada en $CONFIG_PHP ${NC}" 
     # Copiar contenido de la carpeta app-295devops-travel a ruta /var/www/html
     if [ -f "/var/www/html/index.html" ]; then
       mv /var/www/html/index.html /var/www/html/index.html.bkp
@@ -138,7 +137,7 @@ ConfigPHP() {
     echo -e "${LBLUE} Se ha copiado los archivos a la ruta /var/www/html. ${NC}" 
     sudo systemctl reload apache2
   else
-    echo -e "${LRED}El archivo $Config_php no existe. Por favor validar.${NC}"
+    echo -e "${LRED}El archivo $CONFIG_PHP no existe. Por favor validar.${NC}"
     exit 
   fi
 }
@@ -175,13 +174,14 @@ ValidarPHP() {
 NotificacionDiscord () {
     discord_key="https://discord.com/api/webhooks/1169002249939329156/7MOorDwzym-yBUs3gp0k5q7HyA42M5eYjfjpZgEwmAx1vVVcLgnlSh4TmtqZqCtbupov"
     # Verifica si se proporcionó el argumento del directorio del repositorio
-    git clone https://github.com/edwinbermudez/295devops-group5.git
-    cd 295devops-group5
-
-    #if [ $# -ne 1 ]; then
-    #    echo "Uso: $0 295devops-group5"
-    #    exit 1
-    #fi
+    pwd
+    if [ -d "295devops-group5" ]; then
+      cd 295devops-group5
+      git pull
+    else
+      git clone https://github.com/edwinbermudez/295devops-group5.git
+      cd 295devops-group5
+    fi
 
     # Obtiene el nombre del repositorio
     REPO_NAME=$(basename $(git rev-parse --show-toplevel))
@@ -190,13 +190,6 @@ NotificacionDiscord () {
     WEB_URL="localhost"
     # Realiza una solicitud HTTP GET a la URL
     HTTP_STATUS=$(curl -Is "$WEB_URL" | head -n 1)
-
-    #echo $REPO_NAME
-    #echo $REPO_URL
-    #echo $WEB_URL
-    #echo $HTTP_STATUS
-
-    #git config --global --add safe.directory $REPO_DIR
 
     if [[ "$HTTP_STATUS" == *"200 OK"* ]]; then
         # Obtén información del repositorio
@@ -208,13 +201,7 @@ NotificacionDiscord () {
     else
       DEPLOYMENT_INFO="La página web $WEB_URL no está en línea."
     fi
-
-    #echo $DEPLOYMENT_INFO2
-    #echo $DEPLOYMENT_INFO
-    #echo $COMMIT
-    #echo $AUTHOR
-    #echo $DESCRIPTION
-    
+ 
     # Construye el mensaje
     MESSAGE="$DEPLOYMENT_INFO2\n$DEPLOYMENT_INFO\n$COMMIT\n$AUTHOR\n$REPO_URL\n$DESCRIPTION"
 
@@ -222,13 +209,13 @@ NotificacionDiscord () {
     # Envía el mensaje a Discord utilizando la API de Discord
     curl -X POST -H "Content-Type: application/json" \
          -d '{
-           "content": "'"${MESSAGE}"'"
+           "content": "'"$MESSAGE"'"
          }' "$discord_key"
 
 }
 #--------------------------------------------------------------------------------------------------#
 #Function Stage1 Instalación de paquetes nuevos y validación de los servicios y paquetes instalados  
-Stage1() {
+stage1() {
   echo -e "${LGREEN} -------------------- Actualizando paquetes existentes ----------------${NC}"
   sudo apt-get update -y
   echo -e "${LGREEN} -------------------- Instalando nuevos paquetes ----------------${NC}"
@@ -237,13 +224,13 @@ Stage1() {
   echo -e "${LGREEN} -------------------- Validacion de los servicios --------------------${NC}"
   ValidacionServicios "${servicios[@]}"
 }
-Stage2() {
+stage2() {
   echo -e "${LGREEN} -------------------- Clonación de Repositorio ----------------${NC}"
   ClonarRepo
   echo -e "${LGREEN} -------------------- Configuración del servidor Apache ----------------${NC}"
   ConfiguracionApache
   }
-Stage3() {
+stage3() {
   echo -e "${LGREEN} -------------------- Configuración de la página web----------------${NC}"
   ConfigPHP
   echo -e "${LGREEN} -------------------- Configuración de la base de datos MariaDB ----------------${NC}"
@@ -251,21 +238,24 @@ Stage3() {
   echo -e "${LGREEN} -------------------- Validación de la página Web ----------------${NC}"
   ValidarPHP
 }
-Stage4() {
+stage4() {
   echo -e "${LGREEN} -------------------- Notificación al canal de Discord ----------------${NC}"
   NotificacionDiscord
 }
 
-#--------------- STAGES ------------------------#  
+#Función principal
+main(){
+  # Stage 1: Installation
+  stage1
+ 
+  # Stage 2: Configuration
+  stage2
+ 
+  # Stage 3: Validation
+  stage3
 
-#Instalación
-Stage1
+  # Stage 4: Notification
+  stage4
+}
 
-#Build
-Stage2
-
-#Deploy
-Stage3
-
-#Notification
-Stage4
+main
