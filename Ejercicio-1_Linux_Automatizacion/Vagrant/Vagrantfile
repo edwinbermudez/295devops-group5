@@ -18,6 +18,11 @@ Vagrant.configure("2") do |config|
 
 
   config.vm.provision "shell", inline: <<-SHELL
+
+    #Variables
+    REPO="295devops-group5"
+    DIRECTORIO="Ejercicio-1_Linux_Automatizacion"
+
     # Asegurar que se esté ejecutando como root
     if [ "$(id -u)" != "0" ]; then
       echo -e "\nDebe ser usuario ROOT."
@@ -26,17 +31,28 @@ Vagrant.configure("2") do |config|
     
     # Definir USERID
     USERID=$(id -u)
-    apt install git -y
-
-    if [ -d "295devops-group5" ]; then
-      cd 295devops-group5
-      git pull origin main
-      cd Ejercicio-1_Linux_Automatizacion
+    
+    #Validación de si el paquete de git esta instalado.
+    if ! command -v git &> /dev/null; then
+      apt-get install git -y
+    fi
+    
+    #Repositorio del script a ejecutar.
+    if [ -d "$REPO" ]; then
+      cd $REPO
+      if ! git pull origin main; then
+        echo -e "\nError: Fallo el pull desde el repositorio $REPO"
+        exit 1
+      fi
+      cd "$DIRECTORIO"
       chmod +x script.sh
       ./script.sh
     else
-      git clone https://github.com/edwinbermudez/295devops-group5.git
-      cd 295devops-group5/Ejercicio-1_Linux_Automatizacion
+      if ! git clone https://github.com/edwinbermudez/295devops-group5.git; then
+        echo -e "\nError: Fallo el clonado del repositorio $REPO"
+        exit 1
+      fi
+      cd "$REPO/$DIRECTORIO"
       chmod +x script.sh
       ./script.sh
     fi
