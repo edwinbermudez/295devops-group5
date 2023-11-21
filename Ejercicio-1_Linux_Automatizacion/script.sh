@@ -172,7 +172,7 @@ ValidarPHP() {
 }
 
 NotificacionDiscord () {
-    discord_key="https://discord.com/api/webhooks/1169002249939329156/7MOorDwzym-yBUs3gp0k5q7HyA42M5eYjfjpZgEwmAx1vVVcLgnlSh4TmtqZqCtbupov"
+    discord_key="https://discord.com/api/webhooks/1154865920741752872/au1jkQ7v9LgQJ131qFnFqP-WWehD40poZJXRGEYUDErXHLQJ_BBszUFtVj8g3pu9bm7h"
     # Verifica si se proporcionó el argumento del directorio del repositorio
     pwd
     if [ -d "295devops-group5" ]; then
