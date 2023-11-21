@@ -1,5 +1,5 @@
 Vagrant.configure("2") do |config|
-  config.vm.box = "ubuntu/jammy64"
+  config.vm.box = "hashicorp/bionic64"
   config.vm.network "private_network", ip: "172.16.1.2"
   config.vm.network "forwarded_port", guest: 80, host: 8081 #localhost
   config.vm.network "forwarded_port", guest: 22, host: 2222 #ssh
@@ -12,49 +12,29 @@ Vagrant.configure("2") do |config|
   config.vm.provider "virtualbox" do |vb|
     vb.memory = "2048"
     vb.cpus = "2"
-    vb.name = "295devops_group5"
+    vb.name = "295devops-group5"
   end
   
-
-
   config.vm.provision "shell", inline: <<-SHELL
-
-    #Variables
-    REPO="295devops-group5"
-    DIRECTORIO="Ejercicio-1_Linux_Automatizacion"
-
-    # Asegurar que se esté ejecutando como root
-    if [ "$(id -u)" != "0" ]; then
-      echo -e "\nDebe ser usuario ROOT."
-      exit 1
-    fi
+  
+    #!/bin/bash
+    sudo apt-get update
     
-    # Definir USERID
-    USERID=$(id -u)
-    
-    #Validación de si el paquete de git esta instalado.
-    if ! command -v git &> /dev/null; then
-      apt-get install git -y
-    fi
-    
-    #Repositorio del script a ejecutar.
-    if [ -d "$REPO" ]; then
-      cd $REPO
-      if ! git pull origin main; then
-        echo -e "\nError: Fallo el pull desde el repositorio $REPO"
-        exit 1
-      fi
-      cd "$DIRECTORIO"
-      chmod +x script.sh
-      ./script.sh
+    dpkg -s "wget" &> /dev/null
+    if [ $? -eq 0 ]; then
+      sleep 1
+      echo -e "\n wget ya se encuentra instalado$"
     else
-      if ! git clone https://github.com/edwinbermudez/295devops-group5.git; then
-        echo -e "\nError: Fallo el clonado del repositorio $REPO"
-        exit 1
-      fi
-      cd "$REPO/$DIRECTORIO"
-      chmod +x script.sh
-      ./script.sh
+      sudo apt-get install -y wget
     fi
+
+    if [ -f script.sh ]; then
+      su - vagrant -c 'sudo ./script.sh'
+    else
+      wget -O script.sh https://raw.githubusercontent.com/edwinbermudez/295devops-group5/main/Ejercicio-1_Linux_Automatizacion/script.sh
+      sudo chmod +x script.sh
+      su - vagrant -c 'sudo ./script.sh'
+    fi  
+
   SHELL
 end
