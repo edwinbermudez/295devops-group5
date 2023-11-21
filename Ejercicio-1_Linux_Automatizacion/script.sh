@@ -33,8 +33,8 @@ paquetes=(
 
 #Servicios MariaDB y Apache2
 servicios=(
-mariadb-server
-apache2
+  mariadb-server
+  apache2
 )
 
 #Definición de colores
