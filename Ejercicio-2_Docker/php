@@ -1,0 +1,22 @@
+# Use an official PHP runtime as a parent image
+FROM php:7.4-apache
+
+# Set the working directory in the container to /var/www/html
+WORKDIR /var/www/html
+
+# Copy the current directory contents into the container at /var/www/html
+COPY /home/vagrant/bootcamp-devops-2023/295devops-travel-lamp/* /var/www/html
+
+# Expose port 80
+EXPOSE 80
+
+# Define the command to run your app using CMD which defines your runtime
+# Here we use the "apache2-foreground" command to start Apache
+CMD ["apache2-foreground"]
+
+
+docker build -t my-php-app .
+
+docker run -p 80:80 -d php-295devops
+
+git clone https://github.com/roxsross/bootcamp-devops-2023.git --single-branch --branch ejercicio2-dockeriza
