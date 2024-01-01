@@ -1,3 +1,4 @@
+#!/bin/bash
 #Setup 
 #   1. 4 VMs Ubuntu, 1 control plane, 3 nodes.
 #   2. Static IPs on individual VMs
