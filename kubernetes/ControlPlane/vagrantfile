@@ -18,9 +18,10 @@ Vagrant.configure("2") do |config|
     sudo chmod +x packages_k8s.sh
     sudo ./packages_k8s.sh
     
-    sudo -u vagrant wget -O install_CP.sh https://raw.githubusercontent.com/edwinbermudez/295devops-group5/main/kubernetes/ControlPlane/cp_install-k8s.sh
-    sudo chmod +x cp_install-k8s.sh
-    sudo -u vagrant ./cp_install-k8s.sh
-
+    su - vagrant -c '
+      wget -O cp_install-k8s.sh https://raw.githubusercontent.com/edwinbermudez/295devops-group5/main/kubernetes/ControlPlane/cp_install-k8s.sh
+      chmod +x cp_install-k8s.sh
+      ./cp_install-k8s.sh
+    '    
     SHELL
   end
